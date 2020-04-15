@@ -1,0 +1,19 @@
+{
+  "name": "itellyou-server",
+  "version": "1.0.0",
+  "description": "itellyou server",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "electron": "^8.2.2",
+    "express": "^4.17.1",
+    "http-proxy-middleware": "^1.0.3",
+    "uuid": "^7.0.3",
+    "xvfb-maybe": "^0.2.1"
+  }
+}
