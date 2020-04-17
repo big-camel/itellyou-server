@@ -8,12 +8,12 @@ app.on('window-all-closed', () => {
     }
 })
 
-let browserWindow
+
 
 let views = {}
 
 const createWindow = options => {
-    browserWindow = new BrowserWindow({
+    const browserWindow = new BrowserWindow({
         width: 1000,
         height: 1000,
         show:false,
@@ -23,9 +23,7 @@ const createWindow = options => {
         },
         ...options
     })
-    browserWindow.on('closed',() => {
-        views = {}
-    })
+    return browserWindow
 }
 
 const readHtml = async id => {
@@ -35,8 +33,31 @@ const readHtml = async id => {
 }
 module.exports.createWindow = createWindow
 const createView = (url , filter , onReady) => {
+    const id = UUID.v4() + "-" + (new Date().getTime())
+   
+    const browserWindow = createWindow()
+    browserWindow.on('closed',() => {
+        delete views[id]
+    })
     const view = new BrowserView()
-    browserWindow.addBrowserView(view)
+    browserWindow.setBrowserView(view)
+
+    views[id] = {
+        id,
+        url,
+        view,
+        requests:[],
+        completeds:[]
+    }
+
+    const reader = time => {
+        return setTimeout(async () => {
+            const html = await readHtml(id)
+            views[id].view.destroy()
+            delete views[id]
+            if(onReady) onReady(html)
+        },time)
+    }
 
     let timeoutRead
     view.webContents.on("dom-ready",event => {
@@ -45,7 +66,7 @@ const createView = (url , filter , onReady) => {
             if(views[id].requests.length === 0){
                 reader(1)
             }
-        },5000)
+        },2000)
     })
 
     let waitRead
@@ -55,6 +76,7 @@ const createView = (url , filter , onReady) => {
         
         if(!exclude || !exclude(details)) {
             if(waitRead) clearTimeout(waitRead)
+            if(timeoutRead) clearTimeout(timeoutRead)
             views[id].requests.push(details.url)
         }
         callback(details)
@@ -66,7 +88,7 @@ const createView = (url , filter , onReady) => {
         views[id].completeds.push(details.url)
         if(views[id].requests.length === views[id].completeds.length){
             waitRead = setTimeout(() => {
-                clearTimeout(timeoutRead)
+                
                 reader(10)
             },100)
         }
@@ -85,29 +107,11 @@ const createView = (url , filter , onReady) => {
 
     view.webContents.loadURL(url)
     view.webContents.setFrameRate(1)
-    const id = UUID.v4() + "-" + (new Date().getTime())
-    views[id] = {
-        id,
-        url,
-        view,
-        requests:[],
-        completeds:[]
-    }
-    
-
-    const reader = time => {
-        return setTimeout(async () => {
-            const html = await readHtml(id)
-            views[id].view.destroy()
-            delete views[id]
-            if(onReady) onReady(html)
-        },time)
-    }
     
     return views[id]
 }
 module.exports.createView = createView
 
 app.on('ready',() => {
-    createWindow()
+    
 })
