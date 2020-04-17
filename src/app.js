@@ -10,9 +10,9 @@ app.use(bodyParser.urlencoded({
     extended: false
 }))
 //设置 api 转发
-app.use(createProxyMiddleware('/api',{target:HOST}))
+app.use(createProxyMiddleware('/api',{target:HOST,changeOrigin:true}))
 //设置资源文件(js,css,png)等转发
-app.use(createProxyMiddleware('**/*.*',{target:HOST}))
+app.use(createProxyMiddleware('**/*.*',{target:HOST,changeOrigin:true}))
 app.disable('x-powered-by')
 
 app.all('*',async (req,res,next) => {
