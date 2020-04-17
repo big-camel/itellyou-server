@@ -3,7 +3,7 @@ const express = require('express')
 const { createView } = require('./electron')
 const app = express()
 const bodyParser = require('body-parser')
-const { ALLOW_ORIGIN , ALLOW_METHOD , ALLOW_HEADERS , ALLOW_CREDENTIALS , HOST , FILTER } = require('./config')
+const { ALLOW_ORIGIN , ALLOW_METHOD , ALLOW_HEADERS , ALLOW_CREDENTIALS , HOST , PORT , FILTER } = require('./config')
 
 app.use(bodyParser.json({limit: '10mb'}))
 app.use(bodyParser.urlencoded({            
@@ -31,4 +31,5 @@ app.all('/*',async (req,res) => {
         res.end()
     })
 })
-app.listen(3001, () => console.log('ITELLYOU SERVER listening on port 3001!'))
+const appPORT = process.env.PORT || PORT
+app.listen(appPORT, () => console.log(`ITELLYOU SERVER listening on port ${appPORT}!`))
