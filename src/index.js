@@ -7,7 +7,8 @@ let child = null
 if(os.type().toLowerCase() === 'linux'){//在服务器上，使用虚拟显示服务器运行 electron 渲染
     child = spawn(path.resolve(__dirname, '../node_modules/.bin/xvfb-maybe'), [
         electron,
-        path.resolve(__dirname, 'app.js')
+        path.resolve(__dirname, 'app.js'),
+        '--no-sandbox'
     ],
     {
         stdio: ['ipc']

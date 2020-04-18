@@ -1,6 +1,7 @@
 const UUID = require('uuid');
 const { app , BrowserView , BrowserWindow } = require('electron')
 
+app.disableDomainBlockingFor3DAPIs()
 app.disableHardwareAcceleration()
 app.on('window-all-closed', () => {
     if (process.platform != 'darwin') {
@@ -8,20 +9,21 @@ app.on('window-all-closed', () => {
     }
 })
 
-
-
 let views = {}
-
+let browserWindow
 const createWindow = options => {
-    const browserWindow = new BrowserWindow({
+    browserWindow = new BrowserWindow({
         width: 1000,
         height: 1000,
         show:false,
         paintWhenInitiallyHidden:false,
         webPreferences:{
-            devTools:false
+            devTools:false,
         },
         ...options
+    })
+    browserWindow.on('closed',() => {
+        views = {}
     })
     return browserWindow
 }
@@ -35,12 +37,8 @@ module.exports.createWindow = createWindow
 const createView = (url , filter , onReady) => {
     const id = UUID.v4() + "-" + (new Date().getTime())
    
-    const browserWindow = createWindow()
-    browserWindow.on('closed',() => {
-        delete views[id]
-    })
     const view = new BrowserView()
-    browserWindow.setBrowserView(view)
+    browserWindow.addBrowserView(view)
 
     views[id] = {
         id,
@@ -66,14 +64,13 @@ const createView = (url , filter , onReady) => {
             if(views[id].requests.length === 0){
                 reader(1)
             }
-        },2000)
+        },600)
     })
 
     let waitRead
 
     const { urls , exclude } = filter
     view.webContents.session.webRequest.onBeforeRequest({urls}, (details, callback) => {
-        
         if(!exclude || !exclude(details)) {
             if(waitRead) clearTimeout(waitRead)
             if(timeoutRead) clearTimeout(timeoutRead)
@@ -90,7 +87,7 @@ const createView = (url , filter , onReady) => {
             waitRead = setTimeout(() => {
                 
                 reader(10)
-            },100)
+            },30)
         }
     })
     view.webContents.session.webRequest.onErrorOccurred({urls}, details => {
@@ -101,17 +98,16 @@ const createView = (url , filter , onReady) => {
             waitRead = setTimeout(() => {
                 clearTimeout(timeoutRead)
                 reader(10)
-            },100)
+            },30)
         }
     })
 
     view.webContents.loadURL(url)
-    view.webContents.setFrameRate(1)
     
     return views[id]
 }
 module.exports.createView = createView
 
 app.on('ready',() => {
-    
+    createWindow()
 })
