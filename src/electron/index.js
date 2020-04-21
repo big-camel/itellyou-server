@@ -87,7 +87,7 @@ const createView = (url , filter , onReady) => {
             waitRead = setTimeout(() => {
                 
                 reader(10)
-            },30)
+            },100)
         }
     })
     view.webContents.session.webRequest.onErrorOccurred({urls}, details => {
@@ -98,7 +98,7 @@ const createView = (url , filter , onReady) => {
             waitRead = setTimeout(() => {
                 clearTimeout(timeoutRead)
                 reader(10)
-            },30)
+            },100)
         }
     })
 
