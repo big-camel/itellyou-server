@@ -1,5 +1,6 @@
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const express = require('express')
+const compression = require('compression')
 const { createView } = require('./electron')
 const app = express()
 const bodyParser = require('body-parser')
@@ -14,6 +15,7 @@ app.use(createProxyMiddleware('/api',{target:HOST,changeOrigin:true}))
 //设置资源文件(js,css,png)等转发
 app.use(createProxyMiddleware('**/*.*',{target:HOST,changeOrigin:true}))
 app.disable('x-powered-by')
+app.use(compression())
 
 app.all('*',async (req,res,next) => {
     res.setHeader("Access-Control-Allow-Origin",ALLOW_ORIGIN)

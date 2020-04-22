@@ -37,7 +37,11 @@ module.exports.createWindow = createWindow
 const createView = (url , filter , onReady) => {
     const id = UUID.v4() + "-" + (new Date().getTime())
    
-    const view = new BrowserView()
+    const view = new BrowserView({
+        webPreferences:{
+            devTools:false,
+        },
+    })
     browserWindow.addBrowserView(view)
 
     views[id] = {
@@ -70,6 +74,7 @@ const createView = (url , filter , onReady) => {
     let waitRead
 
     const { urls , exclude } = filter
+ 
     view.webContents.session.webRequest.onBeforeRequest({urls}, (details, callback) => {
         if(!exclude || !exclude(details)) {
             if(waitRead) clearTimeout(waitRead)
@@ -85,7 +90,7 @@ const createView = (url , filter , onReady) => {
         views[id].completeds.push(details.url)
         if(views[id].requests.length === views[id].completeds.length){
             waitRead = setTimeout(() => {
-                
+                clearTimeout(timeoutRead)
                 reader(10)
             },100)
         }
